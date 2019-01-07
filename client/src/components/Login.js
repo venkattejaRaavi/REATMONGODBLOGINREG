@@ -50,7 +50,7 @@ class Login extends React.Component
                     <div className="col-md-6 mt-5 mx-auto">
                         <form noValidate onSubmit={this.onSubmit}>
                             <h1 className="h3 mb-3 font-weight-normal">Please Sign in</h1>
-                            <span>{this.state.error ? this.state.error : ''}</span>
+                            
                             <div className="form-group">
                                 <label htmlFor="email">Email Address</label>
                                 <input
@@ -72,6 +72,7 @@ class Login extends React.Component
                                     value={this.state.password}
                                     onChange={this.onChange}
                                 />
+                                <span>{this.state.error ? this.state.error : ''}</span>
                             </div>
                                 <button type="text" className="btn btn-outline-primary">
                                     Sign in
