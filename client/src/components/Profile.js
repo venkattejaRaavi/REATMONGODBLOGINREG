@@ -1,21 +1,29 @@
 import React from 'react';
-import jwt_decode from 'jwt-decode';
-import {getProfile} from './UserFunctions';
-import {connect} from 'react-redux';
+import { getProfile } from './UserFunctions';
+import { connect } from 'react-redux';
 import { dispatch, bindActionCreators } from "redux";
 
-class Profile extends React.Component
-{   
-   
-    componentDidMount(){
-        const token = localStorage.usertoken
-        const decoded = jwt_decode(token)
-        this.props.getProfile(decoded.identity._id);
-       
+class Profile extends React.Component {
+    constructor() {
+        super()
+        this.state = { 'status_code': 200 }
     }
-    render()
-    {
-        return(
+    componentDidMount() {
+        this.props.getProfile().then(res => {
+            console.log(res.status_code)
+            this.setState({ status_code: res.status_code })
+        });
+
+    }
+     /*onChange =(event)=>{
+         console.log("Entered onChange")
+        
+        localStorage.removeItem('usertoken')
+        this.props.history.push('/')
+    }*/
+
+    render() {
+        const profileData = (
             <div className="container">
                 <div className="jumbotron mt-5">
                     <div className="col-sm-8 mx-auto">
@@ -44,22 +52,41 @@ class Profile extends React.Component
                 </div>
             </div>
         )
+        const fraudPage = (
+
+            <div className="jumbotron mt-5">
+                <div className="col-sm-8 mx-auto">
+                    <h1 className="text-center">Invalid hain, fraud ... kaha se aaya reeh!</h1>
+                    
+                </div>
+            </div>
+            
+        )
+        return (
+            <div>
+
+                {this.state.status_code === 200 ? profileData : fraudPage}
+
+            </div>
+
+
+        )
     }
 }
 
-const mapStateToProps = (state)=>{
+const mapStateToProps = (state) => {
     return {
-                first_name:state.user.first_name,
-                last_name:state.user.last_name,
-                email:state.user.email,
-                address:state.user.address 
-                   
-            };
+        first_name: state.user.first_name,
+        last_name: state.user.last_name,
+        email: state.user.email,
+        address: state.user.address
+
+    };
 };
-const mapDispatchToProps = (dispatch)=>{
+const mapDispatchToProps = (dispatch) => {
     return {
         getProfile: bindActionCreators(getProfile, dispatch)
     }
 }
 
-export default connect(mapStateToProps,mapDispatchToProps)(Profile);
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);

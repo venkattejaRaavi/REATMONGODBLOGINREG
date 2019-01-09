@@ -8,7 +8,7 @@ const INITIAL_STATE={
 }
 
 const userReducer = (state=INITIAL_STATE,action) =>{
-    if(action.type=='GET_PROFILE'){
+    if(action.type==='GET_PROFILE'){
         return {...state,first_name:action.payload.first_name,
                 last_name:action.payload.last_name,
                 email:action.payload.email,

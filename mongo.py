@@ -4,8 +4,9 @@ from bson import ObjectId
 from datetime import datetime
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager
-from flask_jwt_extended import create_access_token
+
+import jwt
+key = 'secret'
 
 
 app=Flask(__name__)
@@ -15,7 +16,7 @@ app.config['JWT_SECRET_KEY'] = 'secret'
 
 mongo = PyMongo(app)
 bcrypt = Bcrypt(app)
-jwt = JWTManager(app)
+
 
 CORS(app)
 
@@ -61,8 +62,11 @@ def login():
     
     if response:
         if bcrypt.check_password_hash(response['password'],password):
-            access_token = create_access_token(identity={ '_id':str(response['_id'])})
-            result = jsonify({'token': access_token, 'status_code':200})
+            
+            access_token = jwt.encode({'_id':str(response['_id'])},key,algorithm='HS256').decode('utf-8')
+            result = jsonify({'token': str(access_token), 'status_code':200})
+            
+
         else:
             result = jsonify({'error':'Invalid Username and Password','status_code':400})
     else:
@@ -70,55 +74,84 @@ def login():
     
     return result
 
-@app.route('/users/profile/<user_id>',methods=["GET"])
-def getProfile(user_id):
+@app.route('/users/profile',methods=["GET"])
+def getProfile():
     users=mongo.db.users
-    #print(user_id)
-    response = users.find_one({'_id': ObjectId(user_id)})
-    #print(response)
-    return jsonify({
+    token=request.headers.get('Authorization')
+    split_token=token.split()[1]
+    #print("The token is :",split_token)
+    try:
+        decoded = jwt.decode(split_token, key, algorithms='HS256')
+        user_id=ObjectId(decoded['_id'])
+        response = users.find_one({'_id': ObjectId(user_id)})
+        return jsonify({
         'first_name':response['first_name'],
         'last_name':response['last_name'],
         'address':response['address'],
-        'email':response['email']
-        
-    })
+        'email':response['email'],
+        'status_code': 200
+        })
+    except:
+        return jsonify({
+            'status_code':404
+        })
+   
 
-@app.route('/users/update/<user_id>',methods=["PATCH"])
-def update(user_id):
+@app.route('/users/update/',methods=["PATCH"])
+
+def update():
+    reqData = request.get_json()
+    print(reqData)
     users=mongo.db.users
-    new_first_name=request.get_json()['new_first_name']
-    new_last_name=request.get_json()['new_last_name']
-    new_email=request.get_json()['new_email']
-    new_address=request.get_json()['new_address']
-    users.find_one_and_update(
-        {
-            '_id': ObjectId(user_id)
-        },
-        {
-            '$set':{
-                        'first_name':new_first_name,
-                        'last_name':new_last_name,
-                        'email':new_email,
-                        'address':new_address
-                    }
-        },
-        projection={'seq':True,'_id':False},
-        upsert=True,
-        )
-    result="You have updated your details successfully"   
-    return jsonify({'result': result})  
-     
-@app.route('/users/deactivate/<user_id>',methods=["DELETE"])
-def deactivate(user_id):
-    print(user_id)
-    users=mongo.db.users
-    users.delete_one({'_id': ObjectId(user_id)})
-    result="Hope! we will expect you soon"
-    return jsonify({
+    new_first_name=reqData['new_first_name']
+    new_last_name=reqData['new_last_name']
+    new_email=reqData['new_email']
+    new_address=reqData['new_address']
+   
+
+    token=request.headers.get('Authorization')
+    split_token=token.split()[1]
+    try:
+        decoded = jwt.decode(split_token, key, algorithms='HS256')
+        user_id=ObjectId(decoded['_id'])
         
-        'result':result
-    })
+        users.find_one_and_update(
+            {
+                '_id': ObjectId(user_id)
+            },
+            {
+                '$set':{
+                            'first_name':new_first_name,
+                            'last_name':new_last_name,
+                            'email':new_email,
+                            'address':new_address
+                        }
+            },
+            projection={'seq':True,'_id':False},
+            upsert=True,
+        )
+        return jsonify({'message': "Details have been updated",'status_code':200 })
+    except:
+        return jsonify({
+            'status_code':404
+        }) 
+     
+@app.route('/users/deactivate/',methods=["DELETE"])
+def deactivate():
+    users=mongo.db.users
+    token=request.headers.get('Authorization')
+    split_token=token.split()[1]
+    try:
+        decoded = jwt.decode(split_token, key, algorithms='HS256')
+        user_id=ObjectId(decoded['_id'])
+        users.delete_one({'_id': ObjectId(user_id)})
+
+        return jsonify({'message': "Hope! we will see you soon",'status_code':200 })
+
+    except:
+        return jsonify({
+            'status_code':404
+        })
 
 
 
