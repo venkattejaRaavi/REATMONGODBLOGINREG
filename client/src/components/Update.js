@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import jwt_decode from 'jwt-decode';
 import {update} from './UserFunctions';
 import React from 'react';
 import UpdateForm from './UpdateForm';
@@ -7,19 +6,41 @@ import {connect} from 'react-redux';
 import { dispatch, bindActionCreators } from "redux";
 class Update extends React.Component{
    
+    constructor(){
+        super()
+        this.state={'status_code':200}
+    }
 
+   
     onSubmit = (formValues)=>{
-        const token = localStorage.usertoken
-        const decoded = jwt_decode(token)
-        this.props.update(decoded.identity._id,formValues).then(res=>{this.props.history.push('/profile')});
+        this.props.update(formValues).then(res=>{
+            this.setState({status_code: res.status_code})
+            
+            if(res.status_code===200)
+            {   this.setState({status_code:res.status_code})
+                alert(res.message)
+                this.props.history.push('/profile');
+            }
+            else if(res.status_code===404)
+            {
+                    alert("Invalid Authorization");
+                    this.setState({status_code:res.status_code})
+                    localStorage.removeItem('usertoken')
+                    this.props.history.push('/')
+
+
+
+            }
+        })
+        
+            
         
         }
 
 
     render(){
-        
-        return(
-            
+
+        const renderUpdate=(
                 <div className="jumbotron">
                     <h3>Update your details</h3>
                     <UpdateForm
@@ -27,6 +48,20 @@ class Update extends React.Component{
                     onSubmit={this.onSubmit}
                     />
                 </div>
+        )
+        const fraudPage=(
+            <div className="jumbotron mt-5">
+                    <div className="col-sm-8 mx-auto">
+                        <h1 className="text-center">Invalid hain, fraud ... kaha se aaya reeh!</h1>
+                    </div>     
+            </div>
+        )
+        
+        return(
+            <div>
+            {this.state.status_code===200? renderUpdate:fraudPage}
+            </div>
+                
         )
     }
 }
@@ -41,7 +76,8 @@ const mapStateToProps = (state)=>{
 
 const mapDispatchToProps = (dispatch)=>{
     return {
-        update: bindActionCreators(update, dispatch)
+        update: bindActionCreators(update, dispatch),
+        
     }
 }
 

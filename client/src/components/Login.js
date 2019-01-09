@@ -27,7 +27,7 @@ class Login extends React.Component
             password: this.state.password
         }
         login(user).then(res =>{
-            console.log(res)
+            
             if(!res.error)
             {
                 this.props.history.push('/profile')
