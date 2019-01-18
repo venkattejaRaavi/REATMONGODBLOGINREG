@@ -21,6 +21,12 @@ class Deactivate extends React.Component{
                 localStorage.removeItem('usertoken')
                 this.props.history.push('/')
             }
+            else if(res.status_code===440)
+            {
+                alert(res.expiry_message)
+               
+                this.props.history.push('/')
+            }
             else if(res.status_code==404){
                 alert("Invalid Authorization");
                     this.setState({status_code:res.status_code})

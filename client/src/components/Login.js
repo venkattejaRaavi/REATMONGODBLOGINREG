@@ -27,17 +27,25 @@ class Login extends React.Component
             password: this.state.password
         }
         login(user).then(res =>{
-            
-            if(!res.error)
-            {
-                this.props.history.push('/profile')
+            if(res.status_code===200){
                 this.setState({ error : ''})
+                localStorage.setItem('usertoken', res.token)
+                this.props.history.push('/profile')
             }
-            else{
-                this.setState({ error : res.error})
-                console.log("Check your mailID and password === ", res.error)
-                this.props.history.push('/login')
+            else if(res.status_code===400)
+            {
+                
+                this.setState({ error : res.message})
             }
+            else if(res.status_code===401){
+                this.setState({ error : ''})
+                alert(res.message)
+                this.props.history.push('/verificationpage')
+            }
+            else if(res.status_code===404){
+                this.setState({ error : res.message})
+            }
+
         })
     }
     

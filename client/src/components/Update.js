@@ -21,6 +21,12 @@ class Update extends React.Component{
                 alert(res.message)
                 this.props.history.push('/profile');
             }
+            else if(res.status_code===440)
+            {
+                alert(res.expiry_message)
+                
+                this.props.history.push('/')
+            }
             else if(res.status_code===404)
             {
                     alert("Invalid Authorization");
