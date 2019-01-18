@@ -33,7 +33,14 @@ class Register extends React.Component
             password: this.state.password
         }
         register(newUser).then(res =>{
-            this.props.history.push('/login')
+
+            if(res.status_code === 409)
+            {
+                alert(res.message)
+                this.props.history.push('/login')
+            }
+            else if(res.status_code === 200)
+            this.props.history.push('/verificationpage')
         })
     }
     

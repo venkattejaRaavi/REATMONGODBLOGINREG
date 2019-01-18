@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 export const register = (newUser) => {
+    
     return axios.post("users/register", {
         first_name: newUser.first_name,
         last_name: newUser.last_name,
@@ -10,8 +11,45 @@ export const register = (newUser) => {
 
     })
         .then(response => {
-            alert(newUser.email + " have been registered")
+            localStorage.setItem('registrationToken',response.data.registration_token)
+            return response.data
         })
+}
+
+export const checkEmail = ()=> (dispatch)=>{
+    return axios.get("users/emailverification",{
+        headers: {
+            Authorization: "Bearer " + localStorage.registrationToken
+        }
+        
+    }).then(res=> {console.log(res)
+        return res.data}).catch(err=>console.log(err));
+    
+    
+};
+
+export const sendOTP = (user_phone)=> async (dispatch) =>{
+    console.log("Inside the sendOTP",user_phone)
+    const response= await axios.post("users/phoneverification/",
+    {
+        phone:user_phone.phone
+        
+    },
+    {headers:{ Authorization: "Bearer " + localStorage.registrationToken }},
+
+    )
+    return response.data;
+}
+export const verifyOTP = (user_otp)=> async (dispatch) =>{
+    const response= await axios.post("users/otpverification/",
+    {
+        otp:user_otp.otp
+        
+    },
+    {headers:{ Authorization: "Bearer " + localStorage.sms_token}},
+
+    )
+    return response.data;
 }
 
 export const login = (user) => {
@@ -20,25 +58,9 @@ export const login = (user) => {
         password: user.password
     })
         .then(response => {
-            if (response.data.status_code === 200) {
-                localStorage.setItem('usertoken', response.data.token)
-                return { 'token': response.data.token }
-            }
-            else if (response.data.status_code === 400) {
-                // alert('Check your name and password')
-                // window.location.href('/login')
-                return { error: "check your name and password" }
-            }
-            else if (response.data.status_code === 404) {
-                // alert('User not found')
-                return { error: "User not found" }
-                // window.location.('/register')
-            }
+            return response.data
         })
-    /*.catch(err => {
-        alert("Check your mailID and password")
-        this.props.history.push('/login')
-    })*/
+    
 }
 
 

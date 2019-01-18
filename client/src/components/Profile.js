@@ -10,17 +10,17 @@ class Profile extends React.Component {
     }
     componentDidMount() {
         this.props.getProfile().then(res => {
-            console.log(res.status_code)
+            if(res.status_code ===200)
+            {
             this.setState({ status_code: res.status_code })
+            }
+            else if(res.status_code === 440)
+            alert(res.expiry_message)
+           
         });
 
     }
-     /*onChange =(event)=>{
-         console.log("Entered onChange")
-        
-        localStorage.removeItem('usertoken')
-        this.props.history.push('/')
-    }*/
+  
 
     render() {
         const profileData = (
